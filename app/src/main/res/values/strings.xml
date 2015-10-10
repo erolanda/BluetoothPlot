@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">BluetoothPlot</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="information_string">Information</string>
+    <string name="scanBlue_string">Scan for devices</string>
+    <string name="connectBlue_string">Connect</string>
+    <string name="openDrawer">Open drawer</string>
+    <string name="closeDrawer">Close drawer</string>
+    <string name="title_activity_device_list">DeviceListActivity</string>
+    <string name="title_activity_bluetooth_scan_activity">bluetooth_scan_activity</string>
+</resources>
