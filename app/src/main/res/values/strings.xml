@@ -10,4 +10,5 @@
     <string name="closeDrawer">Close drawer</string>
     <string name="title_activity_device_list">DeviceListActivity</string>
     <string name="title_activity_bluetooth_scan_activity">bluetooth_scan_activity</string>
+    <string name="refresh">Refresh</string>
 </resources>
