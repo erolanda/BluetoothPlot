@@ -12,16 +12,16 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bluetooth"/>
+        android:background="@drawable/bluetooth" />
 
     <TextView
+        android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Bluetooth Plot"
-        android:id="@+id/name"
         android:gravity="center"
-        android:textSize="20sp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+        android:text="Bluetooth Plot"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="20sp" />
 
 </LinearLayout>
