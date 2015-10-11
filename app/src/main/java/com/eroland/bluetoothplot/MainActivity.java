@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity
                         Fragment f = getSupportFragmentManager().findFragmentById(R.id.content_frame);
 
                         if (f instanceof DevicesFragment) {
-                            ((DevicesFragment) f).addDevice(new Device(device.getName(), device.getAddress()));
+                            ((DevicesFragment) f).addDevice(device);
                         } else {
                             Log.d(TAG, "ignoring BT scan result");
                         }

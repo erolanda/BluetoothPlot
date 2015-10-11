@@ -1,5 +1,6 @@
 package com.eroland.bluetoothplot;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,15 +10,15 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class DeviceAdapter extends ArrayAdapter<Device> {
-    private List<Device> mData;
+public class BluetoothDeviceAdapter extends ArrayAdapter<BluetoothDevice> {
+    private List<BluetoothDevice> mData;
 
-    public DeviceAdapter(Context context, List<Device> devices) {
+    public BluetoothDeviceAdapter(Context context, List<BluetoothDevice> devices) {
         super(context, 0, devices);
         mData = devices;
     }
 
-    public void addDevice(Device device) {
+    public void addDevice(BluetoothDevice device) {
         mData.add(device);
         notifyDataSetChanged();
     }
@@ -25,7 +26,7 @@ public class DeviceAdapter extends ArrayAdapter<Device> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         final ViewHolder holder;
-        final Device device = getItem(position);
+        final BluetoothDevice device = getItem(position);
 
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.delegate_device, parent, false);
