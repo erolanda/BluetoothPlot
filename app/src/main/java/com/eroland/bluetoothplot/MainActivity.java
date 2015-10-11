@@ -6,12 +6,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,40 +21,66 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.eroland.bluetoothplot.fragments.ConnectFragment;
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener,
+        DevicesFragment.OnDevicesFragmentInteractionListener,
+        InformationFragment.OnInformationFragmentInteractionListener {
 
-public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    // Create a BroadcastReceiver for ACTION_FOUND
+
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive");
             String action = intent.getAction();
-            // When discovery finds a device
+
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Get the BluetoothDevice object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                // Add the name and address to an array adapter to show in a ListView
-                Log.d(TAG, "Found device " + device.getName() + " - " + device.getAddress());
+                final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Fragment f = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+
+                        if (f instanceof DevicesFragment) {
+                            ((DevicesFragment) f).addDevice(new Device(device.getName(), device.getAddress()));
+                        } else {
+                            Log.d(TAG, "ignoring BT scan result");
+                        }
+                    }
+                });
             }
         }
     };
-
-    private Toolbar toolbar;
-    private DrawerLayout drawerLayout;
-
-    private ActionBarDrawerToggle drawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        setupToolbar();
-        setupDrawerLayout();
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+
+        ft.replace(R.id.content_frame, new DevicesFragment());
+        ft.commit();
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(mReceiver, filter);
+    }
+
+    private void scanBtDevices() {
+        Log.d(TAG, "scanning for BT devices");
+        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        bluetoothManager.getAdapter().startDiscovery();
     }
 
     @Override
@@ -63,69 +90,24 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mReceiver);
     }
 
-    private void setupToolbar() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+    @Override
+    public void onDevicesFragmentRequestScan() {
+        scanBtDevices();
     }
 
-    private void setupDrawerLayout() {
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
-                selectDrawerItem(menuItem);
-                return true;
-            }
-        });
-
-        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawer, R.string.closeDrawer);
-        drawerLayout.setDrawerListener(drawerToggle);
-        drawerToggle.syncState();
-    }
-
-    private void selectDrawerItem(MenuItem menuItem) {
-        Fragment fragment = null;
-        Class fragmentClass;
-        Float elevation = getResources().getDimension(R.dimen.elevation_toolbar);
-
-        switch (menuItem.getItemId()) {
-            case R.id.connectToBluetooth:
-                fragmentClass = ConnectFragment.class;
-                break;
-            default:
-                fragmentClass = ConnectFragment.class;
-                break;
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
-
-        try {
-            fragment = (Fragment) fragmentClass.newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        fragmentTransaction.replace(R.id.content_frame, fragment);
-        fragmentTransaction.addToBackStack("FRAGMENT");
-        fragmentTransaction.commit();
-
-        menuItem.setChecked(true);
-        setTitle(menuItem.getTitle());
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            toolbar.setElevation(elevation);
-
-        drawerLayout.closeDrawers();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_actions, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
@@ -133,18 +115,44 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_refresh) {
-            scanBtDevices();
-        } else if (id == R.id.action_settings) {
+        if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void scanBtDevices() {
-        Log.d(TAG, "scanning for BT devices");
-        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-        bluetoothManager.getAdapter().startDiscovery();
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_devices) {
+            if (!(getSupportFragmentManager().findFragmentById(R.id.content_frame) instanceof DevicesFragment)) {
+                FragmentManager fm = getSupportFragmentManager();
+                FragmentTransaction ft = fm.beginTransaction();
+
+                ft.replace(R.id.content_frame, new DevicesFragment());
+                ft.commit();
+            }
+        } else if (id == R.id.nav_information) {
+            if (!(getSupportFragmentManager().findFragmentById(R.id.content_frame) instanceof InformationFragment)) {
+                FragmentManager fm = getSupportFragmentManager();
+                FragmentTransaction ft = fm.beginTransaction();
+
+                ft.replace(R.id.content_frame, new InformationFragment());
+                ft.commit();
+            }
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onInformationFragmentInteraction(Uri uri) {
+
     }
 }
