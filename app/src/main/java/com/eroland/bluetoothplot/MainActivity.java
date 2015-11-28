@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity
     private void scanBtDevices() {
         Log.d(TAG, "scanning for BT devices");
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+
         bluetoothManager.getAdapter().startDiscovery();
     }
 
