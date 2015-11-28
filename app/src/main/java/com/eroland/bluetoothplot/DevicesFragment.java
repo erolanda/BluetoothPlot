@@ -70,7 +70,7 @@ public class DevicesFragment extends Fragment {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter != null) {
             if (!mBluetoothAdapter.isEnabled()) {
-                Toast.makeText(getContext(), "Turning ON Bluetooth", Toast.LENGTH_LONG);
+                Toast.makeText(getContext(), "Turning ON Bluetooth", Toast.LENGTH_LONG).show();
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, 1);
             }else{
@@ -78,7 +78,7 @@ public class DevicesFragment extends Fragment {
             }
         }else{
             // Device does not support Bluetooth
-            Toast.makeText(getContext(), "Device does not support bluetooth", Toast.LENGTH_LONG);
+            Toast.makeText(getContext(), "Device does not support bluetooth", Toast.LENGTH_LONG).show();
         }
 
         return view;
